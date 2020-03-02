@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+
+  <body></body>
+</html>
+<script>
+  const Parent = null;
+  const LayoutContainer = null;
+  let HrChart = null;
+  let WorktimeChart = null;
+  let AlphaChart = null;
+  // rating
+  let Rating = null;
+  let RatingRules = null;
+  let RatingCreate = null;
+  let RatingReview = null;
+  let Today = null;
+  let PersonalInfo = null;
+  let Candidate = null;
+  let TeamAttendance = null;
+  let TeamVocation = null;
+  let TeamExchange = null;
+  const ratingRouteMap = {
+    create: "/rating/owner",
+    rating: "/rating/reviewer",
+    all: "/rating/all"
+  };
+  function noPermission(permissionMap, key, ele) {
+    if (Array.isArray(key)) {
+      return (
+        key.some(ele => getValueFromObj(permissionMap, key, ele)) === false
+      );
+    } else {
+      return getValueFromObj(permissionMap, key, ele) === false;
+    }
+  }
+  function getValueFromObj(obj, keys, ele) {
+    let keyArr;
+    // console.log('keys', ele);
+    if (typeof keys === "string") {
+      keyArr = keys.split(/\W+/);
+    } else if (Array.isArray(keys)) {
+      keyArr = keys;
+    }
+    return keyArr.reduce((res, next) => (res = res[next]), obj);
+  }
+  function filterRouter(permissionMap, routerList) {
+    let leng = routerList.length - 1;
+    for (let i = leng; i >= 0; i--) {
+      // if (routerList[i].allowWhen) {
+      //     console.log(routerList[i].allowWhen)
+      //     console.log(noPermission(permissionMap, routerList[i].allowWhen, routerList[i]))
+      //     // return
+      // }
+      if (
+        routerList[i].allowWhen &&
+        noPermission(permissionMap, routerList[i].allowWhen, routerList[i])
+      ) {
+        routerList.splice(i, 1);
+        continue;
+      }
+      if (
+        (routerList[i].children && routerList[i].children.length > 0) ||
+        (routerList[i].navList && routerList[i].navList.length > 0)
+      ) {
+        if (routerList[i].children) {
+          filterRouter(permissionMap, routerList[i].children);
+        }
+        if (routerList[i].navList) {
+          filterRouter(permissionMap, routerList[i].navList);
+        }
+      }
+    }
+    return routerList;
+  }
+
+  const router = [
+    {
+      path: "/analytics",
+      name: "analyticsContainer",
+      component: LayoutContainer,
+      allowWhen: "analytics.sidebar",
+      children: [
+        {
+          path: "worktime_chart/:type",
+          name: "worktimeChart",
+          component: WorktimeChart,
+          props: true,
+          navList: [
+            {
+              type: "submenu",
+              name: "考勤报表",
+              // allowWhen: 当有这个权限时候才可以展示这一项
+              allowWhen: "analytics.worktime",
+              navList: [
+                {
+                  name: "日报",
+                  pathname: "/analytics/worktime_chart/day"
+                },
+                {
+                  name: "周报",
+                  pathname: "/analytics/worktime_chart/week"
+                },
+                {
+                  name: "月报",
+                  pathname: "/analytics/worktime_chart/month"
+                },
+                {
+                  name: "缺勤统计",
+                  pathname: "/analytics/worktime_chart/absent"
+                },
+                {
+                  name: "考勤详情",
+                  pathname: "/analytics/worktime_chart/detail"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          path: "hr_chart/:type",
+          name: "hrChart",
+          component: HrChart,
+          props: true,
+          navList: [
+            {
+              type: "menu-groups",
+              name: "招聘报表",
+              allowWhen: "analytics.recruit",
+              navList: [
+                {
+                  type: "sub-menu-groups",
+                  name: "简历数据统计分析表",
+                  navList: [
+                    {
+                      name: "简历筛选情况",
+                      pathname: "/analytics/hr_chart/resume_filter"
+                    },
+                    {
+                      name: "简历来源情况",
+                      pathname: "/analytics/hr_chart/resume_from"
+                    },
+                    {
+                      name: "赴约率情况",
+                      pathname: "/analytics/hr_chart/appoint_percent"
+                    }
+                  ]
+                },
+                {
+                  type: "sub-menu-groups",
+                  name: "面试数据统计分析表",
+                  navList: [
+                    // {
+                    // 暂时隐藏入口
+                    //     name: '简历推荐人',
+                    //     pathname: '/analytics/hr_chart/resume_recommend'
+                    // },
+                    {
+                      name: "一面面试官情况",
+                      pathname: "/analytics/hr_chart/interview_first"
+                    },
+                    {
+                      name: "二面面试官情况",
+                      pathname: "/analytics/hr_chart/interview_second"
+                    },
+                    {
+                      name: "三面面试官情况",
+                      pathname: "/analytics/hr_chart/interview_third"
+                    },
+                    {
+                      name: "面试过程表",
+                      pathname: "/analytics/hr_chart/interview_process"
+                    }
+                  ]
+                },
+                {
+                  type: "sub-menu-groups",
+                  name: "offer情况统计分析表",
+                  navList: [
+                    {
+                      name: "offer转化情况",
+                      pathname: "/analytics/hr_chart/offer_valid"
+                    },
+                    {
+                      name: "offer的简历来源",
+                      pathname: "/analytics/hr_chart/offer_from"
+                    },
+                    {
+                      name: "拒offer原因分布",
+                      pathname: "/analytics/hr_chart/offer_reject"
+                    }
+                  ]
+                },
+                {
+                  type: "sub-menu-groups",
+                  name: "渠道有效性分析表",
+                  navList: [
+                    {
+                      name: "面试数据",
+                      pathname: "/analytics/hr_chart/interview_data"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          path: "alpha_chart/:project/:type",
+          name: "alphaChart",
+          component: AlphaChart,
+          props: true,
+          navList: [
+            {
+              type: "menu-groups",
+              name: "alpha报表",
+              allowWhen: "analytics.alpha",
+              navList: [
+                {
+                  type: "sub-menu-groups",
+                  name: "Top15",
+                  navList: [
+                    {
+                      name: "我的团队",
+                      pathname: "/analytics/alpha_chart/top15/team",
+                      allowWhen: "analytics.top15.top15_team"
+                    },
+                    {
+                      name: "团队成员",
+                      pathname: "/analytics/alpha_chart/top15/cooperation",
+                      allowWhen: "analytics.top15.top15_cooperation"
+                    },
+                    {
+                      name: "项目组使用情况",
+                      pathname: "/analytics/alpha_chart/top15/project",
+                      allowWhen: "analytics.top15.top15_project"
+                    }
+                  ]
+                },
+                {
+                  type: "sub-menu-groups",
+                  name: "Todo",
+                  navList: [
+                    {
+                      name: "Todo使用情况",
+                      pathname: "/analytics/alpha_chart/todo/used"
+                    }
+                  ]
+                },
+                {
+                  type: "sub-menu-groups",
+                  name: "Meeting",
+                  navList: [
+                    {
+                      name: "提交会议总结情况",
+                      pathname: "/analytics/alpha_chart/meeting/summary_submit"
+                    },
+                    {
+                      name: "关联todo的完成情况",
+                      pathname: "/analytics/alpha_chart/meeting/assign_todo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      path: "/rating",
+      name: "rating",
+      component: LayoutContainer,
+      allowWhen: "rating.sidebar",
+      children: [
+        {
+          path: "owner",
+          component: Parent,
+          navList: [
+            {
+              icon: "rate_mywork",
+              name: "我的作品",
+              pathname: ratingRouteMap["create"],
+              allowWhen: "rating.create"
+            }
+          ],
+          children: [
+            {
+              path: "",
+              name: "ratingOwner",
+              component: Rating,
+              props: {
+                type: "owner"
+              }
+            },
+            {
+              path: "create_rating",
+              component: Parent,
+              children: [
+                {
+                  path: "rate",
+                  name: "ratingCreateRate",
+                  component: RatingCreate,
+                  meta: {
+                    keepAlive: true,
+                    isRefresh: false
+                  }
+                },
+                {
+                  path: "vote",
+                  name: "ratingCreateVote",
+                  component: RatingCreate,
+                  meta: {
+                    keepAlive: true,
+                    isRefresh: false
+                  }
+                },
+                {
+                  path: "review",
+                  name: "ratingCreateReview",
+                  component: RatingReview,
+                  props: route => ({
+                    ratingFrom: "owner"
+                  })
+                }
+              ]
+            },
+            {
+              path: ":ratingID",
+              name: "ratingOwnerReview",
+              component: RatingReview,
+              props: route => ({
+                ratingID: route.params.ratingID,
+                ratingFrom: "owner"
+              })
+            }
+          ]
+        },
+        {
+          path: "reviewer",
+          component: Parent,
+          navList: [
+            {
+              icon: "rate_judge",
+              name: "我是评委",
+              pathname: ratingRouteMap["rating"],
+              allowWhen: "rating.rating"
+            }
+          ],
+          children: [
+            {
+              path: "",
+              name: "ratingReviewer",
+              component: Rating,
+              props: {
+                type: "reviewer"
+              }
+            },
+            {
+              path: ":ratingID",
+              name: "ratingReviewerReview",
+              component: RatingReview,
+              props: route => ({
+                ratingID: route.params.ratingID,
+                ratingFrom: "reviewer"
+              })
+            }
+          ]
+        },
+        {
+          path: "all",
+          component: Parent,
+          navList: [
+            {
+              icon: "rate_all",
+              name: "全部",
+              pathname: ratingRouteMap["all"],
+              allowWhen: "rating.all"
+            }
+          ],
+          children: [
+            {
+              path: "",
+              name: "ratingAll",
+              component: Rating,
+              props: {
+                type: "all"
+              }
+            },
+            {
+              path: ":ratingID",
+              name: "ratingAllReview",
+              component: RatingReview,
+              props: route => ({
+                ratingID: route.params.ratingID,
+                ratingFrom: "all"
+              })
+            }
+          ]
+        },
+        {
+          path: "rules",
+          name: "ratingRules",
+          component: RatingRules,
+          navList: [
+            {
+              icon: "rate_rules",
+              name: "评分规则",
+              pathname: "/rating/rules",
+              allowWhen: ""
+            }
+          ]
+        }
+      ]
+    }
+  ];
+  const permissionMap = {
+    data: {
+      ability_matrix: [
+        {
+          level: "\u6a31\u6843",
+          level_name: "\u5e73\u53f0\u4ea7\u54c1\u7ecf\u7406-BPM\u6a31\u6843",
+          name: "\u5e73\u53f0\u4ea7\u54c1\u7ecf\u7406-BPM"
+        }
+      ],
+      avatar:
+        "http://ihandy.bamboohr.com/employees/photos/?h=85c214df1d7a821e89fe220ae4e28c10",
+      company: "iHandy",
+      department: "RDC",
+      division: "084",
+      email: "chen.dong@ihandysoft.com",
+      is_report_to: false,
+      job_title: "DES",
+      permission: {
+        analytics: {
+          alpha: true,
+          recruit: true,
+          sidebar: false,
+          top15: {
+            sidebar: false,
+            top15_cooperation: false,
+            top15_project: false,
+            top15_team: false
+          },
+          worktime: true
+        },
+        book: { add: true, sidebar: true },
+        meeting: { sidebar: true },
+        rating: { all: false, create: true, rating: true, sidebar: true },
+        recruit: { send_offer: true, sidebar: true },
+        rethink: { sidebar: true },
+        rule: { sidebar: true },
+        staffservice: { sidebar: true },
+        todo: { sidebar: true },
+        top15: { sidebar: true },
+        training: { sidebar: true },
+        worktime: { sidebar: true }
+      },
+      slack_id: "U9WURUM71",
+      slack_name: "chen.dong820",
+      user_name: "\u8463\u741b"
+    },
+    meta: { code: 200 }
+  };
+
+  const arr = filterRouter(permissionMap.data.permission, router);
+  console.log("arr", arr);
+
+  const children = [
+    {
+      path: "/worktime",
+      name: "worktime",
+      component: LayoutContainer,
+      redirect: "/worktime/team_attendance",
+      title: "Worktime 工作时光",
+      children: [
+        {
+          path: "team_attendance",
+          name: "teamAttendance",
+          component: TeamAttendance,
+          navList: [
+            {
+              name: "Team 出勤",
+              pathname: "/worktime/team_attendance"
+            }
+          ]
+        },
+        {
+          path: "team_vocation",
+          name: "teamVocation",
+          component: TeamVocation,
+          navList: [
+            {
+              name: "Team 假期",
+              pathname: "/worktime/team_vocation"
+            }
+          ]
+        },
+        {
+          path: "team_exchange",
+          name: "teamExchange",
+          component: TeamExchange,
+          navList: [
+            {
+              name: "Team 补班",
+              pathname: "/worktime/team_exchange"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      path: "/recruithub",
+      name: "hr",
+      component: LayoutContainer,
+      redirect: "/recruithub/td_appointment_interview",
+      title: "Recruithub 青青子衿",
+      children: [
+        {
+          path: "td_appointment_interview",
+          name: "appointmentInterview",
+          component: Today,
+          meta: {
+            keepAlive: true
+          },
+          navList: [
+            {
+              type: "submenu",
+              name: "当前事宜"
+            }
+          ],
+          title: "测试title111",
+          children: [
+            {
+              path: "/test",
+              // title: '测试title222',
+              children: [
+                {
+                  path: "/test",
+                  // title: '测试title222',
+                  navList: [
+                    {
+                      name: "测试孙子",
+                      path: "测试孙子的节点"
+                    }
+                  ]
+                }
+              ],
+
+              navList: [
+                {
+                  name: "待约面试",
+                  pathname: "/recruithub/td_appointment_interview",
+                  format: () => {
+                    return store.state.hr.currentCount["not_invite"]
+                      ? `待约面试 (${store.state.hr.currentCount["not_invite"]})`
+                      : "待约面试";
+                  }
+                },
+                {
+                  name: "面试",
+                  pathname: "/recruithub/td_interview",
+                  format: () => {
+                    return store.state.hr.currentCount["not_sign_in"]
+                      ? `面试 (${store.state.hr.currentCount["not_sign_in"]})`
+                      : "面试";
+                  }
+                },
+                {
+                  name: "口头offer到期",
+                  pathname: "/recruithub/td_oral_offer",
+                  format: () => {
+                    return store.state.hr.currentCount["oral_offer"]
+                      ? `口头offer到期 (${store.state.hr.currentCount["oral_offer"]})`
+                      : "口头offer到期";
+                  }
+                },
+                {
+                  name: "签书面offer",
+                  pathname: "/recruithub/td_written_offer",
+                  format: () => {
+                    return store.state.hr.currentCount["written_offer"]
+                      ? `签书面offer (${store.state.hr.currentCount["written_offer"]})`
+                      : "签书面offer";
+                  }
+                },
+                {
+                  name: "待定到期",
+                  pathname: "/recruithub/td_pending_duration",
+                  format: () => {
+                    return store.state.hr.currentCount["pending"]
+                      ? `待定到期 (${store.state.hr.currentCount["pending"]})`
+                      : "待定到期";
+                  }
+                },
+                {
+                  name: "待入职",
+                  pathname: "/recruithub/td_take_offer",
+                  format: () => {
+                    return store.state.hr.currentCount["entry_offer"]
+                      ? `待入职 (${store.state.hr.currentCount["entry_offer"]})`
+                      : "待入职";
+                  }
+                }
+              ]
+            }
+          ]
+          // navList: [
+          //     {
+          //         pathname: '/recruithub/td_appointment_interview',
+          //         name: store.state.hr.currentCount['not_invite']
+          //             ? `待约面试 (${store.state.hr.currentCount['not_invite']})`
+          //             : '待约面试'
+          //     }
+          // ],
+        },
+        {
+          path: "td_appointment_interview/personal_info/:id",
+          name: "interviewPersonal",
+          component: PersonalInfo,
+          navList: [
+            {
+              type: "submenu1",
+              name: "当前事宜1"
+            }
+          ]
+        },
+        {
+          path: "td_interview",
+          name: "interview",
+          component: Today,
+          meta: {
+            keepAlive: true
+          }
+          // navList: [
+          //     {
+          //         name: '面试',
+          //         pathname: '/recruithub/td_interview',
+          //         format: () => {
+          //             return store.state.hr.currentCount['not_sign_in']
+          //                 ? `面试 (${store.state.hr.currentCount['not_sign_in']})`
+          //                 : '面试';
+          //         }
+          //     }
+          // ]
+        },
+        {
+          path: "td_interview/personal_info/:id",
+          name: "interPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "td_oral_offer",
+          name: "oralOffer",
+          component: Today,
+          meta: {
+            keepAlive: true
+          }
+          // navList: [
+          //     {
+          //         name: '口头offer到期',
+          //         pathname: '/recruithub/td_oral_offer',
+          //         format: () => {
+          //             return store.state.hr.currentCount['oral_offer']
+          //                 ? `口头offer到期 (${store.state.hr.currentCount['oral_offer']})`
+          //                 : '口头offer到期';
+          //         }
+          //     }
+          // ]
+        },
+        {
+          path: "td_oral_offer/personal_info/:id",
+          name: "oralOfferPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "td_written_offer",
+          name: "writtenOffer",
+          component: Today,
+          meta: {
+            keepAlive: true
+          }
+          // navList: [
+          //     {
+          //         name: '签书面offer',
+          //         pathname: '/recruithub/td_written_offer',
+          //         format: () => {
+          //             return store.state.hr.currentCount['written_offer']
+          //                 ? `签书面offer (${store.state.hr.currentCount['written_offer']})`
+          //                 : '签书面offer';
+          //         }
+          //     }
+          // ]
+        },
+        {
+          path: "td_written_offer/personal_info/:id",
+          name: "writtenOfferPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "td_pending_duration",
+          name: "pendingDuration",
+          component: Today,
+          meta: {
+            keepAlive: true
+          }
+          // navList: [
+          //     {
+          //         name: '待定到期',
+          //         pathname: '/recruithub/td_pending_duration',
+          //         format: () => {
+          //             return store.state.hr.currentCount['pending']
+          //                 ? `待定到期 (${store.state.hr.currentCount['pending']})`
+          //                 : '待定到期';
+          //         }
+          //     }
+          // ]
+        },
+        {
+          path: "td_pending_duration/personal_info/:id",
+          name: "pendingDurationPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "td_take_offer",
+          name: "takeOffer",
+          component: Today,
+          meta: {
+            keepAlive: true
+          }
+          // navList: [
+          //     {
+          //         name: '待入职',
+          //         pathname: '/recruithub/td_take_offer',
+          //         format: () => {
+          //             return store.state.hr.currentCount['entry_offer']
+          //                 ? `待入职 (${store.state.hr.currentCount['entry_offer']})`
+          //                 : '待入职';
+          //         }
+          //     }
+          // ]
+        },
+        {
+          path: "td_take_offer/personal_info/:id",
+          name: "takeOfferPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "all_cda",
+          name: "allCda",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "all_cda/personal_info/:id",
+          name: "allCdaPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_appointment_interview",
+          name: "appointInterview",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_appointment_interview/personal_info/:id",
+          name: "appointInterviewPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_to_interview",
+          name: "toInterview",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_to_interview/personal_info/:id",
+          name: "toInterviewPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_signed",
+          name: "signed",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_signed/personal_info/:id",
+          name: "signedPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_pending",
+          name: "pending",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_pending/personal_info/:id",
+          name: "pendingPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_oral_offer",
+          name: "cdaOral",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_oral_offer/personal_info/:id",
+          name: "cdaOralPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_written_offer",
+          name: "cdaWritten",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_written_offer/personal_info/:id",
+          name: "cdaWrittenPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_pending_entry",
+          name: "cdaPending",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_pending_entry/personal_info/:id",
+          name: "cdaPendingPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_taken_offer",
+          name: "cdaTakenOffer",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_taken_offer/personal_info/:id",
+          name: "cdaTakenOfferPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_not_pass_interview",
+          name: "notPass",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_not_pass_interview/personal_info/:id",
+          name: "notPassPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_not_interview",
+          name: "notInterview",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_not_interview/personal_info/:id",
+          name: "notInterviewPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_forgo_offer",
+          name: "forgoOffer",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_forgo_offer/personal_info/:id",
+          name: "forgoOfferPersonal",
+          component: PersonalInfo
+        },
+        {
+          path: "cda_blacklist",
+          name: "blacklist",
+          component: Candidate,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: "cda_blacklist/personal_info/:id",
+          name: "blacklistPersonal",
+          component: PersonalInfo
+        }
+      ]
+    }
+  ];
+
+  const getMenu = (routeList, navList = [], navObj = {}) => {
+    routeList.forEach(ele => {
+      const obj = { navList: [] };
+      if (ele.title) {
+        obj.title = ele.title;
+        if (ele.path) {
+          navObj[ele.path.substring(1)] = obj;
+        }
+      } else {
+        navObj["navList"] = navList;
+      }
+      if (ele.navList) {
+        navList.push(...ele.navList);
+      }
+      if (ele.children) {
+        getMenu(ele.children, obj.navList, navList[0]);
+      }
+      return navObj;
+    });
+    return navObj;
+  };
+
+  console.log("最后的结果", getMenu(children));
+</script>
