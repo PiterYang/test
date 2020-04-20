@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
-  </head>
-  <body>
-    test
-  </body>
-  <script>
-    Function.prototype.myCall = function(context) {
-      context = context || window;
-      context.fn = this;
-      let arg = [...arguments].slice(1);
-      console.log(...arg);
-      const result = context.fn(...arg);
-      delete context.fn;
-      return result;
-    };
-    function test(name, age) {
-      console.log("name", name);
-      console.log("age", age);
-      console.log(this.value);
-    }
-    Function.prototype.myApply = function(context, arr) {
-      context = context || window;
-      context.fn = this;
-      const result = context.fn(...arr);
-      delete context.fn;
-      return result;
-    };
-    test.myCall({ value: "haha" }, "namearg", 18);
-    test.myApply({ value: "apply" }, ["applyAry", 19]);
-  </script>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Document</title>
+    </head>
+    <body>
+        test
+    </body>
+    <script>
+        Function.prototype.myCall = function(context) {
+            context = context || window;
+            context.fn = this;
+            let arg = [...arguments].slice(1);
+            console.log(...arg);
+            const result = context.fn(...arg);
+            delete context.fn;
+            return result;
+        };
+        function test(name, age) {
+            console.log("name", name);
+            console.log("age", age);
+            console.log(this.value);
+        }
+        Function.prototype.myApply = function(context, arr) {
+            context = context || window;
+            context.fn = this;
+            const result = context.fn(...arr);
+            delete context.fn;
+            return result;
+        };
+        test.myCall({ value: "haha" }, "namearg", 18);
+        test.myApply({ value: "apply" }, ["applyAry", 19]);
+    </script>
 </html>

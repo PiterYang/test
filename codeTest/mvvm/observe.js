@@ -1,38 +1,38 @@
 function Dep() {
-    this.subs = []
+    this.subs = [];
 }
 Dep.prototype = {
-    addSub(item){
-        this.subs.push(item)
+    addSub(item) {
+        this.subs.push(item);
     },
-    notify(){
+    notify() {
         this.subs.forEach(item => {
-            item.update()
-        })
+            item.update();
+        });
     }
-}
+};
 
-function observe (data) {
-    if(!data || typeof data !== 'object') {
-        return 
+function observe(data) {
+    if (!data || typeof data !== "object") {
+        return;
     }
     Object.keys(data).forEach(item => {
-        defineReactive(data, key, data[key])
-    })
+        defineReactive(data, key, data[key]);
+    });
 }
 
 function defineReactive(data, key, val) {
-    let dep = new Dep()
-    observe(val)
+    let dep = new Dep();
+    observe(val);
     Object.defineProperties(data, key, {
         get() {
-            Dep.target && dep.addSub(Dep.target)
-            return val
+            Dep.target && dep.addSub(Dep.target);
+            return val;
         },
         set(newVal) {
-            if(newVal === val) return 
-            val = newVal
-            dep.notify()
+            if (newVal === val) return;
+            val = newVal;
+            dep.notify();
         }
-    })
+    });
 }

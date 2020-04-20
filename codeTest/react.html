@@ -1,122 +1,133 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Hello World</title>
+        <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Hello World</title>
-  <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+        <!-- Don't use this in production: -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    </head>
 
-  <!-- Don't use this in production: -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="text/babel">
-      class Cat extends React.Component {
-          render() {
-            const mouse = this.props;
-            console.log(mouse)
-            return (
-                <img src="test.jpeg" alt="" style={{ position: 'absolute', left :mouse.x, right: mouse.y, width: '50px', height: '50px'}} />
-            )
-          }
-      }
-    //   class Mouse extends React.Component {
-    //     constructor(props) {
-    //           super(props)
-    //           this.handleMouseMove = this.handleMouseMove.bind(this)
-    //           this.state = {
-    //               x: 0,
-    //               y: 0,
-    //           }
-    //       }
-    //       handleMouseMove(event) {
-    //           this.setState({
-    //             x: event.clientX,
-    //             y: event.clientY
-    //           })
-    //       }
-    //     render() {
-    //         return (
-    //             <div style={{height: '100%'}} onMouseMove={this.handleMouseMove}>
-    //                 {this.props.children(this.state)}
-    //             </div>
-    //         )
-    //     }
-    //   }
-    //   class MouseTracker extends React.Component {
-    //       render() {
-    //           return(
-    //               <div>
-    //                 <h1>移动鼠标</h1>
-    //                 <Mouse children={mouse => (<Cat mouse={mouse} />)} />
-    //               </div>
-    //           )
-    //       }
-    //   }
-      function mouse1 (WraperComponent, options) {
-          return class extends React.Component{
-            constructor(props){
-                super(props)
-                  this.handleMouseMove = this.handleMouseMove.bind(this)
-                  this.state = {
-                      x: 0,
-                      y: 0,
-                  }
-              }
-              handleMouseMove(event) {
-                  this.setState({
-                      x: event.clientX,
-                      y: event.clientY
-                  })
-              }
-              render(){
-                  return (
-                      <div style={{height: '100%'}} onMouseMove={this.handleMouseMove}>
-                         <WraperComponent mouse={this.state}  />
-                    </div>
-                  )
-              }
-          }
-      }
-
-      // 反向继承
-      function mouse2 (WraperedComponent,options) {
-        return class extends WraperedComponent{
-          constructor(props){
-                super(props)
-                  this.handleMouseMove = this.handleMouseMove.bind(this)
-                  this.state = {
-                      x: 0,
-                      y: 0,
-                  }
-          }
-          handleMouseMove(event) {
-              this.setState({
-                  x: event.clientX,
-                  y: event.clientY
-              })
-          }
-          render() {
-            const wraperNode = super.render()
-            const props = {
-              ...this.state,
-              ...wraperNode.props
+    <body>
+        <div id="root"></div>
+        <script type="text/babel">
+            class Cat extends React.Component {
+                render() {
+                    const mouse = this.props;
+                    console.log(mouse);
+                    return (
+                        <img
+                            src="test.jpeg"
+                            alt=""
+                            style={{
+                                position: "absolute",
+                                left: mouse.x,
+                                right: mouse.y,
+                                width: "50px",
+                                height: "50px"
+                            }}
+                        />
+                    );
+                }
             }
-            let wraperNode1 = React.cloneElement(wraperNode, props, wraperNode.props.children)
-            return wraperNode1
-          }
-        }
-      }
-      const MouseTracker = mouse2(Cat)
-      ReactDOM.render(
-        <MouseTracker />,
-        document.getElementById('root')
-      );
+            //   class Mouse extends React.Component {
+            //     constructor(props) {
+            //           super(props)
+            //           this.handleMouseMove = this.handleMouseMove.bind(this)
+            //           this.state = {
+            //               x: 0,
+            //               y: 0,
+            //           }
+            //       }
+            //       handleMouseMove(event) {
+            //           this.setState({
+            //             x: event.clientX,
+            //             y: event.clientY
+            //           })
+            //       }
+            //     render() {
+            //         return (
+            //             <div style={{height: '100%'}} onMouseMove={this.handleMouseMove}>
+            //                 {this.props.children(this.state)}
+            //             </div>
+            //         )
+            //     }
+            //   }
+            //   class MouseTracker extends React.Component {
+            //       render() {
+            //           return(
+            //               <div>
+            //                 <h1>移动鼠标</h1>
+            //                 <Mouse children={mouse => (<Cat mouse={mouse} />)} />
+            //               </div>
+            //           )
+            //       }
+            //   }
+            function mouse1(WraperComponent, options) {
+                return class extends React.Component {
+                    constructor(props) {
+                        super(props);
+                        this.handleMouseMove = this.handleMouseMove.bind(this);
+                        this.state = {
+                            x: 0,
+                            y: 0
+                        };
+                    }
+                    handleMouseMove(event) {
+                        this.setState({
+                            x: event.clientX,
+                            y: event.clientY
+                        });
+                    }
+                    render() {
+                        return (
+                            <div
+                                style={{ height: "100%" }}
+                                onMouseMove={this.handleMouseMove}
+                            >
+                                <WraperComponent mouse={this.state} />
+                            </div>
+                        );
+                    }
+                };
+            }
 
-    </script>
-</body>
-
+            // 反向继承
+            function mouse2(WraperedComponent, options) {
+                return class extends WraperedComponent {
+                    constructor(props) {
+                        super(props);
+                        this.handleMouseMove = this.handleMouseMove.bind(this);
+                        this.state = {
+                            x: 0,
+                            y: 0
+                        };
+                    }
+                    handleMouseMove(event) {
+                        this.setState({
+                            x: event.clientX,
+                            y: event.clientY
+                        });
+                    }
+                    render() {
+                        const wraperNode = super.render();
+                        const props = {
+                            ...this.state,
+                            ...wraperNode.props
+                        };
+                        let wraperNode1 = React.cloneElement(
+                            wraperNode,
+                            props,
+                            wraperNode.props.children
+                        );
+                        return wraperNode1;
+                    }
+                };
+            }
+            const MouseTracker = mouse2(Cat);
+            ReactDOM.render(<MouseTracker />, document.getElementById("root"));
+        </script>
+    </body>
 </html>
