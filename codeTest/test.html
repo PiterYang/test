@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Meta -->
+        <meta charset="UTF-8" />
+        <title>Vue.JS Grid</title>
+
+        <!-- Styles -->
+        <style>
+            table {
+                border-collapse: collapse;
+                border-spacing: 0;
+                border-left: 1px solid #aaa;
+                border-top: 1px solid #aaa;
+                /* background: #efefef; */
+            }
+
+            th {
+                border-right: 1px solid #888;
+                border-bottom: 1px solid #888;
+                /* padding: 3px 15px; */
+                text-align: center;
+                font-weight: bold;
+                /* background: #ccc; */
+                font-size: 13px;
+            }
+
+            td {
+                border-right: 1px solid #888;
+                border-bottom: 1px solid #888;
+                /* padding: 3px 15px; */
+                text-align: center;
+                color: #3c3c3c;
+                width: 50px;
+                height: 50px;
+            }
+        </style>
+    </head>
+    <body>
+        <table id="tableId" border="1">
+            <thead>
+                <tr>
+                    <th>Heading 1</th>
+                    <th>Heading 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>cell 1</td>
+                    <td>cell 2</td>
+                </tr>
+            </tbody>
+        </table>
+        <input
+            type="button"
+            value="select table"
+            onclick="selectElementContents( document.getElementById('tableId') );"
+        />
+    </body>
+    <script>
+        function selectElementContents(el) {
+            var body = document.body,
+                range,
+                sel;
+            if (document.createRange && window.getSelection) {
+                range = document.createRange();
+                sel = window.getSelection();
+                sel.removeAllRanges();
+                try {
+                    range.selectNodeContents(el);
+                    sel.addRange(range);
+                } catch (e) {
+                    range.selectNode(el);
+                    sel.addRange(range);
+                }
+            } else if (body.createTextRange) {
+                range = body.createTextRange();
+                range.moveToElementText(el);
+                range.select();
+            }
+        }
+        selectElementContents(document.getElementById(tableId"));
+    </script>
+</html>

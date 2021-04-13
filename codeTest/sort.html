@@ -7,10 +7,51 @@
         <title>Document</title>
     </head>
     <body>
-        test
+        <table id="tableId" border="1">
+            <thead>
+                <tr>
+                    <th>Heading 1</th>
+                    <th>Heading 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>cell 1</td>
+                    <td>cell 2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <input
+            type="button"
+            value="select table"
+            onclick="selectElementContents( document.getElementById('tableId') );"
+        />
     </body>
 </html>
 <script>
+    function selectElementContents(el) {
+        console.log(111);
+        var body = document.body,
+            range,
+            sel;
+        if (document.createRange && window.getSelection) {
+            range = document.createRange();
+            sel = window.getSelection();
+            sel.removeAllRanges();
+            try {
+                range.selectNodeContents(el);
+                sel.addRange(range);
+            } catch (e) {
+                range.selectNode(el);
+                sel.addRange(range);
+            }
+        } else if (body.createTextRange) {
+            range = body.createTextRange();
+            range.moveToElementText(el);
+            range.select();
+        }
+    }
     function bubbleSort(arr) {
         for (var i = 0; i < arr.length - 1; i++) {
             for (var j = 0; j < arr.length - i - 1; j++) {
